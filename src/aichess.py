@@ -124,6 +124,7 @@ class Aichess():
             tupla = (self.chess, currentState)
             for nei in self.getListNextStatesW(currentState):
 
+
                 self.chess = tupla[0]
                 currentState = tupla[1]
                 self.hacer_movimiento(currentState, nei)
