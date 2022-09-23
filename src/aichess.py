@@ -108,30 +108,44 @@ class Aichess():
         # Your Code
         listCheckMateStates = [[[4, 5, 2], [0, 7, 2]], [[4, 5, 2], [1, 7, 2]], [[4, 5, 2], [2, 7, 2]],
                                    [[4, 5, 2], [6, 7, 2]], [[4, 5, 2], [7, 7, 2]]]
-        for element in listCheckMateStates:
-            if element in self.getListNextStatesW(mystate):
-                print("is check Mate!")
-                return True
+
+        listCheckMate_king= [[0,3,6], [1,3,6], [1,4,6], [1,5,6], [0,5,6]] #casos donde es checkMate con el rey
+
+        listCheckMate_Tower =[0,4] #casos donde es checkMate con la torre
+
+        for pieces in mystate:
+            if pieces[2] == 6: #checkMate rey
+                if pieces in listCheckMate_king:
+                    return mystate
+            #elif pieces[2] == 2: #checkMate Torre
+
+
         return False
         
 
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
+        check = self.isCheckMate(currentState)
 
-
-        if self.isCheckMate(currentState):
-            return currentState
+        if check:
+            return [currentState] + check
 
         if currentState not in self.listVisitedStates:
             self.listVisitedStates.append(currentState)
             tupla = (copy.deepcopy(self.chess), currentState)
+
             for nei in self.getListNextStatesW(currentState):
                 self.chess = tupla[0]
-                #currentState = tupla[1]
-                self.hacer_movimiento(currentState, nei)
-                pth = self.DepthFirstSearch(nei,depth+1)
-                if pth:
-                 return [currentState] + pth
+                self.currentStateW = tupla[1]
+                print("El estado actual es: ", currentState)
+                print("El self es         : ", self.currentStateW)
+                if nei not in self.listVisitedStates and nei[0][0] != nei[1][0] and nei[0][1] != nei[1][1]: #comprobamos que no vayamos a una posicion ocupada
+                    print("nos movemos a: ",nei)
+                    print("nos movemos a: ", nei[0][1])
+                    self.hacer_movimiento(self.currentStateW, nei)
+                    pth = self.DepthFirstSearch(nei,depth+1)
+                    if pth:
+                        return [currentState] + pth
 
         return False
  
@@ -152,7 +166,7 @@ class Aichess():
     def AStarSearch(self, currentState):
             
         # Your Code here
-        
+
         return 0
 
 
@@ -215,9 +229,11 @@ if __name__ == "__main__":
     # find the shortest path, initial depth 0
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
+    lista = aichess.DepthFirstSearch(currentState, depth)
 
-    if aichess.DepthFirstSearch(currentState, depth):
+    if lista:
         print("encontrado")
+        print("Conjunto de movimientos: ", lista)
     else:
         print("no hay solucion")
 
@@ -241,5 +257,5 @@ if __name__ == "__main__":
 
     # aichess.chess.boardSim.print_board()
     print("#Move sequence...  ", aichess.pathToTarget)
-    print("#Visited sequence...  ", aichess.listVisitedStates)
+    #print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
