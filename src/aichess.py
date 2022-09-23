@@ -118,6 +118,7 @@ class Aichess():
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
 
+
         if self.isCheckMate(currentState):
             return currentState
 
