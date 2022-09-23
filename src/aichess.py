@@ -54,7 +54,7 @@ class Aichess():
         start = [e for e in standard_current_state if e not in standard_next_state]
         to = [e for e in standard_next_state if e not in standard_current_state]
         start, to = start[0][0:2], to[0][0:2]
-        self.chess.boardSim.moveSim(start, to)
+        aichess.chess.moveSim(start, to)
 
     def getCurrentState(self):
 
@@ -106,10 +106,13 @@ class Aichess():
     def isCheckMate(self, mystate):
 
         # Your Code
-        if self.piece.King(False).position in self.getListNextStatesW(mystate):
-            return True
-        else:
-            return False
+        listCheckMateStates = [[[4, 5, 2], [0, 7, 2]], [[4, 5, 2], [1, 7, 2]], [[4, 5, 2], [2, 7, 2]],
+                                   [[4, 5, 2], [6, 7, 2]], [[4, 5, 2], [7, 7, 2]]]
+        for element in listCheckMateStates:
+            if element in self.getListNextStatesW(mystate):
+                print("is check Mate!")
+                return True
+        return False
         
 
     def DepthFirstSearch(self, currentState, depth):
@@ -120,16 +123,13 @@ class Aichess():
             return currentState
 
         if currentState not in self.listVisitedStates:
-            self.listVisitedStates.add(currentState)
-            tupla = (self.chess, currentState)
+            self.listVisitedStates.append(currentState)
+            tupla = (copy.deepcopy(self.chess), currentState)
             for nei in self.getListNextStatesW(currentState):
-
-
                 self.chess = tupla[0]
-                currentState = tupla[1]
+                #currentState = tupla[1]
                 self.hacer_movimiento(currentState, nei)
                 pth = self.DepthFirstSearch(nei,depth+1)
-
                 if pth:
                  return [currentState] + pth
 
@@ -214,8 +214,13 @@ if __name__ == "__main__":
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
     depth = 0
-    aichess.BreadthFirstSearch(currentState)
-    #aichess.DepthFirstSearch(currentState, depth)
+    #aichess.BreadthFirstSearch(currentState)
+
+    if aichess.DepthFirstSearch(currentState, depth):
+        print("encontrado")
+    else:
+        print("no hay solucion")
+
 
     # MovesToMake = ['1e','2e','2e','3e','3e','4d','4d','3c']
 
