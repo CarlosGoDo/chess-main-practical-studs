@@ -102,24 +102,58 @@ class Aichess():
             return isVisited
         else:
             return False
+    def nei_corrector(self, nei,listVisitedStates):
+        """
+        En esta función observaremos si el nei o estado futuro del tablero al que vamos tiene algún tipo de error
+        como poner dos fichas en la misma posición o transformar una torre en rey.
+        """
+
+        if nei not in listVisitedStates:
+            if nei[0][2] != nei[1][2]: #En este caso tenemos un estado del tablero futuro donde las 2 fichas són iguales
+                if (nei[0][0] != nei[1][0]) and (nei[0][1] != nei[1][1]):#Aquí comprobamos que las fichas no se superpongan en la misma posición del tablero.
+                    return True
+        return False
 
     def isCheckMate(self, mystate):
 
         # Your Code
-        listCheckMateStates = [[[4, 5, 2], [0, 7, 2]], [[4, 5, 2], [1, 7, 2]], [[4, 5, 2], [2, 7, 2]],
-                                   [[4, 5, 2], [6, 7, 2]], [[4, 5, 2], [7, 7, 2]]]
 
         listCheckMate_king= [[0,3,6], [1,3,6], [1,4,6], [1,5,6], [0,5,6]] #casos donde es checkMate con el rey
 
-        listCheckMate_Tower =[0,4] #casos donde es checkMate con la torre
+        #listCheckMate_Tower =[0,4] #casos donde es checkMate con la torre
 
         for pieces in mystate:
             if pieces[2] == 6: #checkMate rey
                 if pieces in listCheckMate_king:
+                    print("CheckMate del rey: ",mystate )
                     return mystate
-            #elif pieces[2] == 2: #checkMate Torre
 
+            elif pieces[2] == 2: #checkMate Torre
+                #hacemos un bucle observando si tenemos alguna pieza enmedio de la torre y el rey negro.
 
+                if pieces[0] == 0 or pieces[1] == 4:#tenemos a la torre y rey en la misma fil o col
+                    for oth_pieces in mystate:
+                        if oth_pieces != pieces:#no queremos comparar a la misma pieza.
+                            if pieces[0] == 0 and oth_pieces[0] == 0: #torre el rey negro y otra pieza en la misma fil
+                                if pieces[1] > 4 and (oth_pieces[1]>4 and oth_pieces[1]<pieces[1]):
+                                    #En este caso tenemos una pieza en medio de la torre y el rey
+                                    return False
+                                elif pieces[1] < 4 and (oth_pieces[1]<4 and oth_pieces[1]>pieces[1]):
+                                    # En este caso tenemos una pieza en medio de la torre y el rey
+                                    return False
+                                else:
+                                    print("CheckMate de la torre: ", mystate)
+                                    return mystate
+                            elif pieces[1] == 4 and oth_pieces[1] == 4:  #torre el rey negro y otra pieza la misma col
+
+                                if pieces[0] > oth_pieces[0]:
+                                    #tenemos una ficha entre la torre y el rey negro
+                                    return False
+                                else:
+                                    print("CheckMate de la torre: ", mystate)
+                                    return mystate
+
+            #otros elif con otras fichas
         return False
         
 
@@ -128,7 +162,7 @@ class Aichess():
         check = self.isCheckMate(currentState)
 
         if check:
-            return [currentState] + check
+            return check
 
         if currentState not in self.listVisitedStates:
             self.listVisitedStates.append(currentState)
@@ -137,11 +171,11 @@ class Aichess():
             for nei in self.getListNextStatesW(currentState):
                 self.chess = tupla[0]
                 self.currentStateW = tupla[1]
-                print("El estado actual es: ", currentState)
-                print("El self es         : ", self.currentStateW)
-                if nei not in self.listVisitedStates and nei[0][0] != nei[1][0] and nei[0][1] != nei[1][1]: #comprobamos que no vayamos a una posicion ocupada
-                    print("nos movemos a: ",nei)
-                    print("nos movemos a: ", nei[0][1])
+                #print("El estado actual es: ", currentState)
+                #print("El self es         : ", self.currentStateW)
+                if self.nei_corrector(nei,self.listVisitedStates):#comprobamos que nei sea un estado deseado.
+                    #print("nos movemos a: ",nei)
+                    #print("nos movemos a: ", nei[0][1])
                     self.hacer_movimiento(self.currentStateW, nei)
                     pth = self.DepthFirstSearch(nei,depth+1)
                     if pth:
