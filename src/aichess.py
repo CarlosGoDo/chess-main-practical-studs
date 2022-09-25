@@ -130,10 +130,11 @@ class Aichess():
 
             elif pieces[2] == 2: #checkMate Torre
                 #hacemos un bucle observando si tenemos alguna pieza enmedio de la torre y el rey negro.
-
+                print("Entro en el check de torre")
                 if pieces[0] == 0 or pieces[1] == 4:#tenemos a la torre y rey en la misma fil o col
                     for oth_pieces in mystate:
                         if oth_pieces != pieces:#no queremos comparar a la misma pieza.
+                            print("comparo estas dos piezas: ",oth_pieces,pieces)
                             if pieces[0] == 0 and oth_pieces[0] == 0: #torre el rey negro y otra pieza en la misma fil
                                 if pieces[1] > 4 and (oth_pieces[1]>4 and oth_pieces[1]<pieces[1]):
                                     #En este caso tenemos una pieza en medio de la torre y el rey
@@ -144,6 +145,7 @@ class Aichess():
                                 else:
                                     print("CheckMate de la torre: ", mystate)
                                     return mystate
+
                             elif pieces[1] == 4 and oth_pieces[1] == 4:  #torre el rey negro y otra pieza la misma col
 
                                 if pieces[0] > oth_pieces[0]:
@@ -152,7 +154,9 @@ class Aichess():
                                 else:
                                     print("CheckMate de la torre: ", mystate)
                                     return mystate
-
+                            else:
+                                print("CheckMate de la torre: ", mystate)
+                                return mystate
             #otros elif con otras fichas
         return False
         
@@ -160,26 +164,27 @@ class Aichess():
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
         check = self.isCheckMate(currentState)
+        if depth <= self.depthMax:
+            if check:
+                return check
 
-        if check:
-            return check
+            if currentState not in self.listVisitedStates:
+                self.listVisitedStates.append(currentState)
+                tupla = (copy.deepcopy(self.chess), currentState)
 
-        if currentState not in self.listVisitedStates:
-            self.listVisitedStates.append(currentState)
-            tupla = (copy.deepcopy(self.chess), currentState)
+                for nei in self.getListNextStatesW(currentState):
+                    self.chess = tupla[0]
+                    self.currentStateW = tupla[1]
 
-            for nei in self.getListNextStatesW(currentState):
-                self.chess = tupla[0]
-                self.currentStateW = tupla[1]
-                #print("El estado actual es: ", currentState)
-                #print("El self es         : ", self.currentStateW)
-                if self.nei_corrector(nei,self.listVisitedStates):#comprobamos que nei sea un estado deseado.
-                    #print("nos movemos a: ",nei)
-                    #print("nos movemos a: ", nei[0][1])
-                    self.hacer_movimiento(self.currentStateW, nei)
-                    pth = self.DepthFirstSearch(nei,depth+1)
-                    if pth:
-                        return [currentState] + pth
+                    if self.nei_corrector(nei,self.listVisitedStates):#comprobamos que nei sea un estado deseado.
+                        print("Estamos en : ", self.currentStateW)
+                        print("Nos vamos a: ", nei)
+                        self.hacer_movimiento(self.currentStateW, nei)
+
+
+                        pth = self.DepthFirstSearch(nei,depth+1)
+                        if pth:
+                            return [currentState] + pth
 
         return False
  
@@ -194,8 +199,10 @@ class Aichess():
     def BestFirstSearch(self, currentState):
             
         # Your Code here
+
+
                 
-        return 0
+        return False
                 
     def AStarSearch(self, currentState):
             
