@@ -11,6 +11,7 @@ import chess
 import numpy as np
 import sys
 import queue
+from queue import PriorityQueue
 from typing import List
 
 RawStateType = List[List[List[int]]]
@@ -102,16 +103,16 @@ class Aichess():
             return isVisited
         else:
             return False
-    def nei_corrector(self, nei,listVisitedStates):
+    def nei_corrector(self, nei):
         """
         En esta función observaremos si el nei o estado futuro del tablero al que vamos tiene algún tipo de error
         como poner dos fichas en la misma posición o transformar una torre en rey.
         """
 
-        if nei not in listVisitedStates:
-            if nei[0][2] != nei[1][2]: #En este caso tenemos un estado del tablero futuro donde las 2 fichas són iguales
-                if (nei[0][0] != nei[1][0]) and (nei[0][1] != nei[1][1]):#Aquí comprobamos que las fichas no se superpongan en la misma posición del tablero.
-                    return True
+
+        if nei[0][2] != nei[1][2]: #En este caso tenemos un estado del tablero futuro donde las 2 fichas són iguales
+            if (nei[0][0] != nei[1][0]) and (nei[0][1] != nei[1][1]):#Aquí comprobamos que las fichas no se superpongan en la misma posición del tablero.
+                return True
         return False
 
     def isCheckMate(self, mystate):
@@ -176,18 +177,15 @@ class Aichess():
                     self.chess = tupla[0]
                     self.currentStateW = tupla[1]
 
-                    if self.nei_corrector(nei,self.listVisitedStates):#comprobamos que nei sea un estado deseado.
-                        print("Estamos en : ", self.currentStateW)
-                        print("Nos vamos a: ", nei)
-                        self.hacer_movimiento(self.currentStateW, nei)
-
-
+                    if self.nei_corrector(nei):#comprobamos que nei sea un estado deseado.
+                        self.hacer_movimiento(currentState, nei)
                         pth = self.DepthFirstSearch(nei,depth+1)
                         if pth:
                             return [currentState] + pth
 
         return False
- 
+
+
     def BreadthFirstSearch(self, currentState):
 
         # Your Code here
@@ -195,11 +193,18 @@ class Aichess():
 
         return 0
 
+    def func_heuristic(self,nei):
 
+        dist1 = abs((0 - nei[0][0])) + abs((4 - nei[0][1]))
+        return dist1
     def BestFirstSearch(self, currentState):
             
         # Your Code here
-
+        open = PriorityQueue()
+        closed = PriorityQueue()
+        open.put(self.func_heuristic(currentState),currentState,self.chess)
+        while not open.empty():
+            actual_state = open.get()
 
                 
         return False
