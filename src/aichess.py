@@ -120,7 +120,6 @@ class Aichess():
 
         listCheckMate_king= [[0,3,6], [1,3,6], [1,4,6], [1,5,6], [0,5,6]] #casos donde es checkMate con el rey
 
-        #listCheckMate_Tower =[0,4] #casos donde es checkMate con la torre
 
         for pieces in mystate:
             if pieces[2] == 6: #checkMate rey
@@ -154,7 +153,8 @@ class Aichess():
                                 else:
                                     print("CheckMate de la torre: ", mystate)
                                     return mystate
-                            else:
+
+                            else:#No hay ninguna ficha entre el rey negro y la torre!!!!
                                 print("CheckMate de la torre: ", mystate)
                                 return mystate
             #otros elif con otras fichas
