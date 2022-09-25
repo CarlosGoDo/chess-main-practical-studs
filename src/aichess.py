@@ -201,10 +201,14 @@ class Aichess():
             
         # Your Code here
         open = PriorityQueue()
-        closed = PriorityQueue()
+        closed = Queue()
         open.put(self.func_heuristic(currentState),currentState,self.chess)
         while not open.empty():
             actual_state = open.get()
+            tupla = tupla = (copy.deepcopy(self.chess), actual_state[1])
+            for nei in self.getListNextStatesW(actual_state[1]):
+                self.chess = tupla[0]
+                if self.nei_corrector(nei) and nei not in
 
                 
         return False
