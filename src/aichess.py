@@ -126,7 +126,7 @@ class Aichess():
             if pieces[2] == 6: #checkMate rey
                 if pieces in listCheckMate_king:
                     print("CheckMate del rey: ",mystate )
-                    return mystate
+                    return [[[0,4,6],mystate[1]]]
 
             elif pieces[2] == 2: #checkMate Torre
                 #hacemos un bucle observando si tenemos alguna pieza enmedio de la torre y el rey negro.
@@ -144,7 +144,7 @@ class Aichess():
                                     return False
                                 else:
                                     print("CheckMate de la torre: ", mystate)
-                                    return mystate
+                                    return [[[0,4,2],mystate[1]]]
 
                             elif pieces[1] == 4 and oth_pieces[1] == 4:  #torre el rey negro y otra pieza la misma col
 
@@ -153,11 +153,11 @@ class Aichess():
                                     return False
                                 else:
                                     print("CheckMate de la torre: ", mystate)
-                                    return mystate
+                                    return [[[0,4,2],mystate[1]]]
 
                             else:#No hay ninguna ficha entre el rey negro y la torre!!!!
                                 print("CheckMate de la torre: ", mystate)
-                                return mystate
+                                return [[[0,4,2],mystate[1]]]
             #otros elif con otras fichas
         return False
         
@@ -198,19 +198,25 @@ class Aichess():
         dist1 = abs((0 - nei[0][0])) + abs((4 - nei[0][1]))
         return dist1
     def BestFirstSearch(self, currentState):
-            
         # Your Code here
+
         open = PriorityQueue()
-        closed = Queue()
+        closed = queue.Queue()
         open.put(self.func_heuristic(currentState),currentState,self.chess)
         while not open.empty():
             actual_state = open.get()
+            self.listVisitedStates.append(actual_state[1])
+            if actual_state == 0:
+                closed.put(actual_state[1], actual_state[2])
+                return
             tupla = tupla = (copy.deepcopy(self.chess), actual_state[1])
             for nei in self.getListNextStatesW(actual_state[1]):
                 self.chess = tupla[0]
-                if self.nei_corrector(nei) and nei not in
+                if self.nei_corrector(nei) and nei not in self.listVisitedStates:
+                    self.hacer_movimiento(actual_state[1], nei)
+                    open.put(self.func_heuristic(nei),nei,self.chess)
 
-                
+            closed.put(actual_state[1],tupla[0])
         return False
                 
     def AStarSearch(self, currentState):
