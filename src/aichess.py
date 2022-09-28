@@ -165,27 +165,29 @@ class Aichess():
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
         #check = self.isCheckMate(currentState)
-        if depth <= self.depthMax:
-            if currentState[0][0] == 0 and currentState[0][1] == 4 :
+        print("estamos en la profundidad", depth,"la maxima profunidad es",self.depthMax)
+        if  depth < 13:
+            if currentState== [[0,0,2],[2,4,6]] or currentState== [[2,4,6],[0,0,2]]:
                 return currentState
 
             if currentState not in self.listVisitedStates:
                 self.listVisitedStates.append(currentState)
-                tupla = (copy.deepcopy(self.chess), currentState)
 
                 for nei in self.getListNextStatesW(currentState):
-                    self.chess = tupla[0]
-                    self.currentStateW = tupla[1]
+
+                    #self.chess = tupla[0]
 
                     if self.nei_corrector(nei) and nei not in self.listVisitedStates:#comprobamos que nei sea un estado deseado.
-                        print("seguimos en un vecino")
-                        print("estamos en el estado: ",currentState," y vamos al estado: ",nei)
+                        #print("seguimos en un vecino de",currentState)
+                        #print("estamos en el estado: ",currentState," y vamos al estado: ",nei)
                         self.hacer_movimiento(currentState, nei)
-                        print(self.chess.boardSim.print_board(), " y vamos al estado: ", nei)
                         pth = self.DepthFirstSearch(nei,depth+1)
                         if pth:
                             return [currentState] + pth
+                        else:
+                            self.hacer_movimiento(nei, currentState)
 
+            #self.listVisitedStates.pop(self.listVisitedStates.index(currentState))
         return False
 
 
@@ -202,16 +204,20 @@ class Aichess():
         return dist1
     def BestFirstSearch(self, currentState):
         # Your Code here
+
+    def AStarSearch(self, currentState):
+            
+        # Your Code here
         objective = []
         open = PriorityQueue()
         closed = queue.Queue()
-        open.put(self.func_heuristic(currentState),currentState,self.chess,None)
+        open.put(self.func_heuristic(currentState), currentState, self.chess, None)
         while not open.empty():
             actual_state = open.get()
             self.listVisitedStates.append(actual_state[1])
 
-            if actual_state[1][0][0] == 0 and actual_state[1][0][1]== 4:
-                closed.put(actual_state[1], actual_state[2],actual_state[3])
+            if actual_state[1][0][0] == 0 and actual_state[1][0][1] == 4:
+                closed.put(actual_state[1], actual_state[2], actual_state[3])
                 return closed
 
             tupla = tupla = (copy.deepcopy(self.chess), actual_state[1])
@@ -219,15 +225,11 @@ class Aichess():
                 self.chess = tupla[0]
                 if self.nei_corrector(nei) and nei not in self.listVisitedStates:
                     self.hacer_movimiento(actual_state[1], nei)
-                    open.put(self.func_heuristic(nei),nei,self.chess,actual_state[1])
+                    open.put(self.func_heuristic(nei), nei, self.chess, actual_state[1])
 
-            closed.put(actual_state[1],tupla[0],actual_state[3])
+            closed.put(actual_state[1], tupla[0], actual_state[3])
 
         return False
-                
-    def AStarSearch(self, currentState):
-            
-        # Your Code here
 
         return 0
 
@@ -292,7 +294,6 @@ if __name__ == "__main__":
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
     lista = aichess.DepthFirstSearch(currentState, depth)
-
     if lista:
         print("encontrado")
         print("Conjunto de movimientos: ", lista)
