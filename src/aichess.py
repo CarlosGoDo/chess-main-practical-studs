@@ -45,7 +45,7 @@ class Aichess():
             self.chess = chess.Chess([], False)
 
         self.listNextStates = []
-        self.listVisitedStates = []
+        self.listVisitedStates = {}
         self.pathToTarget = []
         self.currentStateW = self.chess.boardSim.currentStateW;
         self.depthMax = 8;
@@ -166,18 +166,16 @@ class Aichess():
         # Your Code here
         #check = self.isCheckMate(currentState)
         print("estamos en la profundidad", depth,"la maxima profunidad es",self.depthMax)
-        if  depth < 13:
-            if currentState== [[0,0,2],[2,4,6]] or currentState== [[2,4,6],[0,0,2]]:
-                return currentState
+        if currentState == [[0, 0, 2], [2, 4, 6]] or currentState == [[2, 4, 6], [0, 0, 2]]:
+            return currentState
 
-            if currentState not in self.listVisitedStates:
-                self.listVisitedStates.append(currentState)
-
+        if  depth < 8:
+            strState = str(currentState)
+            if strState not in self.listVisitedStates or self.listVisitedStates[strState]>depth:
+                self.listVisitedStates[strState] = depth
                 for nei in self.getListNextStatesW(currentState):
 
-                    #self.chess = tupla[0]
-
-                    if self.nei_corrector(nei) and nei not in self.listVisitedStates:#comprobamos que nei sea un estado deseado.
+                    if self.nei_corrector(nei):#comprobamos que nei sea un estado deseado.
                         #print("seguimos en un vecino de",currentState)
                         #print("estamos en el estado: ",currentState," y vamos al estado: ",nei)
                         self.hacer_movimiento(currentState, nei)
@@ -187,7 +185,7 @@ class Aichess():
                         else:
                             self.hacer_movimiento(nei, currentState)
 
-            #self.listVisitedStates.pop(self.listVisitedStates.index(currentState))
+
         return False
 
 
@@ -204,7 +202,7 @@ class Aichess():
         return dist1
     def BestFirstSearch(self, currentState):
         # Your Code here
-
+        return 0
     def AStarSearch(self, currentState):
             
         # Your Code here
