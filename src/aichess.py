@@ -46,6 +46,7 @@ class Aichess():
 
         self.listNextStates = []
         self.listVisitedStates = {}
+        self.listaEstadosVisitados = []
         self.pathToTarget = []
         self.currentStateW = self.chess.boardSim.currentStateW;
         self.depthMax = 8;
@@ -160,7 +161,19 @@ class Aichess():
                                 return [[[0,4,2],mystate[1]]]
             #otros elif con otras fichas
         return False
-        
+
+    def invert_state(self,currentState):
+        """
+        Dado un estado donde el rey esta en la primera posción como por ejemplo [[7, 4, 6], [7, 0, 2]], la funcion
+        invertira este estado y lo devolvera en forma de string [[7, 0, 2], [7, 4, 6]]
+        """
+        nei = copy.copy(currentState)
+        if nei[0][2] == 6:
+            aux = nei[0]
+            nei[0] = nei[1]
+            nei[1] = aux
+        return str(nei)
+
 
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
@@ -170,7 +183,7 @@ class Aichess():
             return currentState
 
         if  depth < 8:
-            strState = str(currentState)
+            strState = self.invert_state(currentState)
             if strState not in self.listVisitedStates or self.listVisitedStates[strState]>depth:
                 self.listVisitedStates[strState] = depth
                 for nei in self.getListNextStatesW(currentState):
@@ -196,10 +209,16 @@ class Aichess():
 
         return 0
 
-    def func_heuristic(self,nei):
+    def func_heuristic(self,est):
+        nei = copy.copy(est)
+        if nei[0][2]==6:
+            aux = nei[0]
+            nei[0] = nei[1]
+            nei[1]=aux
 
-        dist1 = abs((0 - nei[0][0])) + abs((4 - nei[0][1]))
-        return dist1
+        dist1 = abs((0 - nei[0][0])) + abs((0 - nei[0][1]))
+        dist2 =abs((2 - nei[1][0])) + abs((4 - nei[1][1]))
+        return dist1 + dist2
     def BestFirstSearch(self, currentState):
         # Your Code here
         return 0
@@ -207,32 +226,26 @@ class Aichess():
             
         # Your Code here
         objective = []
-        open = PriorityQueue()
+        opened = PriorityQueue()
         closed = queue.Queue()
-        open.put(self.func_heuristic(currentState), currentState, self.chess, None)
-        while not open.empty():
-            actual_state = open.get()
-            self.listVisitedStates.append(actual_state[1])
-
-            if actual_state[1][0][0] == 0 and actual_state[1][0][1] == 4:
-                closed.put(actual_state[1], actual_state[2], actual_state[3])
+        #open.put(VALOR HEURISTICA  , ESTADO,TABLERO EN EL ESTADO, PADRE)
+        heu = self.func_heuristic(currentState)
+        opened.put([heu, {'estado_act': currentState, 'chess': self.chess, 'father': None}])
+        while not opened.empty():
+            actual_state = opened.get()
+            if actual_state[1] == [[0, 0, 2], [2, 4, 6]] or actual_state[1] == [[2, 4, 6], [0, 0, 2]]:
+                closed.put({'estado_act': actual_state[1]['estado_act'], 'chess':  actual_state[1]['chess'], 'father':actual_state[1]['father']})
                 return closed
 
-            tupla = tupla = (copy.deepcopy(self.chess), actual_state[1])
-            for nei in self.getListNextStatesW(actual_state[1]):
+            tupla =(copy.deepcopy(self.chess))
+            for nei in self.getListNextStatesW(actual_state[1]['estado_act']):
+
+                if self.nei_corrector(nei):
+                    self.hacer_movimiento(actual_state[1]['estado_act'], nei)
+                    opened.put(self.func_heuristic(nei), nei, self.chess, actual_state[1]['estado_act'])
                 self.chess = tupla[0]
-                if self.nei_corrector(nei) and nei not in self.listVisitedStates:
-                    self.hacer_movimiento(actual_state[1], nei)
-                    open.put(self.func_heuristic(nei), nei, self.chess, actual_state[1])
-
             closed.put(actual_state[1], tupla[0], actual_state[3])
-
         return False
-
-        return 0
-
-
-
 def translate(s):
     """
     Translates traditional board coordinates of chess into list indices
@@ -291,7 +304,10 @@ if __name__ == "__main__":
     # find the shortest path, initial depth 0
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
-    lista = aichess.DepthFirstSearch(currentState, depth)
+    #lista = aichess.DepthFirstSearch(currentState, depth)
+
+    lista = queue.Queue()
+    lista = aichess.AStarSearch(currentState)
     if lista:
         print("encontrado")
         print("Conjunto de movimientos: ", lista)
