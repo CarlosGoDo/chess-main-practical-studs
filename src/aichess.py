@@ -13,6 +13,7 @@ import sys
 import queue
 from queue import PriorityQueue
 from typing import List
+from random import randrange
 
 RawStateType = List[List[List[int]]]
 
@@ -104,6 +105,18 @@ class Aichess():
             return isVisited
         else:
             return False
+
+    def invert_state(self,currentState):
+        """
+        Dado un estado donde el rey esta en la primera posción como por ejemplo [[7, 4, 6], [7, 0, 2]], la funcion
+        invertira este estado y lo devolvera en forma de string [[7, 0, 2], [7, 4, 6]]
+        """
+        nei = copy.copy(currentState)
+        if nei[0][2] == 6:
+            aux = nei[0]
+            nei[0] = nei[1]
+            nei[1] = aux
+        return str(nei)
     def nei_corrector(self, nei):
         """
         En esta función observaremos si el nei o estado futuro del tablero al que vamos tiene algún tipo de error
@@ -119,85 +132,37 @@ class Aichess():
     def isCheckMate(self, mystate):
 
         # Your Code
+        listCheckMateStates = [[[0, 0, 2], [2, 4, 6]], [[0, 1, 2], [2, 4, 6]], [[0, 2, 2], [2, 4, 6]],
+                               [[0, 6, 2], [2, 4, 6]], [[0, 7, 2], [2, 4, 6]]]
 
-        listCheckMate_king= [[0,3,6], [1,3,6], [1,4,6], [1,5,6], [0,5,6]] #casos donde es checkMate con el rey
+        if mystate in listCheckMateStates:
+            print("is check Mate!")
+            return True
 
-
-        for pieces in mystate:
-            if pieces[2] == 6: #checkMate rey
-                if pieces in listCheckMate_king:
-                    print("CheckMate del rey: ",mystate )
-                    return [[[0,4,6],mystate[1]]]
-
-            elif pieces[2] == 2: #checkMate Torre
-                #hacemos un bucle observando si tenemos alguna pieza enmedio de la torre y el rey negro.
-                print("Entro en el check de torre")
-                if pieces[0] == 0 or pieces[1] == 4:#tenemos a la torre y rey en la misma fil o col
-                    for oth_pieces in mystate:
-                        if oth_pieces != pieces:#no queremos comparar a la misma pieza.
-                            print("comparo estas dos piezas: ",oth_pieces,pieces)
-                            if pieces[0] == 0 and oth_pieces[0] == 0: #torre el rey negro y otra pieza en la misma fil
-                                if pieces[1] > 4 and (oth_pieces[1]>4 and oth_pieces[1]<pieces[1]):
-                                    #En este caso tenemos una pieza en medio de la torre y el rey
-                                    return False
-                                elif pieces[1] < 4 and (oth_pieces[1]<4 and oth_pieces[1]>pieces[1]):
-                                    # En este caso tenemos una pieza en medio de la torre y el rey
-                                    return False
-                                else:
-                                    print("CheckMate de la torre: ", mystate)
-                                    return [[[0,4,2],mystate[1]]]
-
-                            elif pieces[1] == 4 and oth_pieces[1] == 4:  #torre el rey negro y otra pieza la misma col
-
-                                if pieces[0] > oth_pieces[0]:
-                                    #tenemos una ficha entre la torre y el rey negro
-                                    return False
-                                else:
-                                    print("CheckMate de la torre: ", mystate)
-                                    return [[[0,4,2],mystate[1]]]
-
-                            else:#No hay ninguna ficha entre el rey negro y la torre!!!!
-                                print("CheckMate de la torre: ", mystate)
-                                return [[[0,4,2],mystate[1]]]
-            #otros elif con otras fichas
         return False
-
-    def invert_state(self,currentState):
-        """
-        Dado un estado donde el rey esta en la primera posción como por ejemplo [[7, 4, 6], [7, 0, 2]], la funcion
-        invertira este estado y lo devolvera en forma de string [[7, 0, 2], [7, 4, 6]]
-        """
-        nei = copy.copy(currentState)
-        if nei[0][2] == 6:
-            aux = nei[0]
-            nei[0] = nei[1]
-            nei[1] = aux
-        return str(nei)
-
 
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
-        #check = self.isCheckMate(currentState)
-        print("estamos en la profundidad", depth,"la maxima profunidad es",self.depthMax)
-        if currentState == [[0, 0, 2], [2, 4, 6]] or currentState == [[2, 4, 6], [0, 0, 2]]:
+        # check = self.isCheckMate(currentState)
+        print("estamos en la profundidad", depth, "la maxima profunidad es", self.depthMax)
+        if self.isCheckMate(currentState):
             return currentState
 
-        if  depth < 8:
-            strState = self.invert_state(currentState)
-            if strState not in self.listVisitedStates or self.listVisitedStates[strState]>depth:
+        if depth < 5:
+            strState = str(currentState)
+            if strState not in self.listVisitedStates or self.listVisitedStates[strState] > depth:
                 self.listVisitedStates[strState] = depth
                 for nei in self.getListNextStatesW(currentState):
 
-                    if self.nei_corrector(nei):#comprobamos que nei sea un estado deseado.
-                        #print("seguimos en un vecino de",currentState)
-                        #print("estamos en el estado: ",currentState," y vamos al estado: ",nei)
+                    if self.nei_corrector(nei):  # comprobamos que nei sea un estado deseado.
+                        # print("seguimos en un vecino de",currentState)
+                        # print("estamos en el estado: ",currentState," y vamos al estado: ",nei)
                         self.hacer_movimiento(currentState, nei)
-                        pth = self.DepthFirstSearch(nei,depth+1)
+                        pth = self.DepthFirstSearch(nei, depth + 1)
                         if pth:
                             return [currentState] + pth
                         else:
                             self.hacer_movimiento(nei, currentState)
-
 
         return False
 
@@ -206,18 +171,137 @@ class Aichess():
 
         # Your Code here
 
+        q = queue.Queue()
+        q.put(currentState)
 
-        return 0
+        while (q.empty() == False):
 
-    def func_heuristic(self,est):
-        nei = copy.copy(est)
-        if nei[0][2]==6:
-            aux = nei[0]
-            nei[0] = nei[1]
-            nei[1]=aux
+            current = q.get()
+            self.listVisitedStatesBFS.append(current)
+            self.pathToTarget.append(current)
+            tupla = (copy.deepcopy(self.chess),current)
 
-        dist1 = abs((0 - nei[0][0])) + abs((0 - nei[0][1]))
-        dist2 =abs((2 - nei[1][0])) + abs((4 - nei[1][1]))
+            if self.isCheckMate(current):
+                return self.pathToTarget
+            else:
+                self.chess = tupla[0]
+
+            print("siguientes movimientos: ")
+            for i in self.getListNextStatesW(current):
+                print(i)
+            for nei in self.getListNextStatesW(current):
+                if nei not in self.listVisitedStatesBFS and self.nei_corrector(nei):
+                    q.put(nei)
+                    self.hacer_movimiento(current, nei)
+                    aichess.chess.boardSim.print_board()
+
+        return False
+
+        """queue = []
+        queue.put(currentState)
+        pth=[currentState]
+
+        while (queue):
+
+            current = queue.get()
+            self.listVisitedStatesBFS.append(current)
+            pth.append(current)
+
+            if current == [[0, 0, 2], [2, 4, 6]] or current == [[2, 4, 6], [0, 0, 2]]:
+                return pth
+            tupla = (copy.deepcopy(self.chess),current)
+            for next in self.getListNextStatesW(current):
+                if self.nei_corrector(next) and next not in self.listVisitedStatesBFS:
+                    self.hacer_movimiento(current,next)
+                    self.listVisitedStatesBFS.append(next)
+                    queue.put(next)
+                    pth.append(next)
+                    self.chess = tupla[0]
+
+        return False"""
+
+        """queue = []
+        queue.append(currentState)
+        # this keeps track of where did we get to each vertex from
+        # so that after we find the exit we can get back
+        parents = dict()
+        parents[str(currentState)] = None
+
+        while queue:
+            v = queue.pop()
+            if v == [[0, 0, 2], [2, 4, 6]] or v == [[2, 4, 6], [0, 0, 2]]:
+                break
+            self.listVisitedStatesBFS.append(v)
+            tupla = (copy.deepcopy(self.chess), v)
+
+            for u in self.getListNextStatesW(v):
+                if self.nei_corrector(u) and u not in self.listVisitedStatesBFS:
+                    self.hacer_movimiento(v,u)
+                    parents[str(u)] = v
+                    queue.append(u)
+                    self.chess = tupla[0]
+
+        # we found the exit, now we have to go through the parents
+        # up to the start vertex to return the path
+        while v != None:
+            self.pathToTarget.append(v)
+            v = parents[str(v)]
+
+        # the path is in the reversed order so we reverse it
+        self.pathToTarget.reverse()
+        return self.pathToTarget"""
+
+        """queue = []
+        queue.append(currentState)
+        vecinos = []
+        # this keeps track of where did we get to each vertex from
+        # so that after we find the exit we can get back
+        parents = dict()
+        parents[str(currentState)] = None
+
+        while queue:
+            v = queue.pop()
+            if v == [[0, 0, 2], [2, 4, 6]] or v == [[2, 4, 6], [0, 0, 2]]:
+                break
+            self.listVisitedStatesBFS.append(v)
+
+            for u in self.getListNextStatesW(v):
+                vecinos.append(u)
+            tupla = (copy.deepcopy(self.chess), v)
+            for nei in vecinos:
+                if self.nei_corrector(nei) and nei not in self.listVisitedStatesBFS:
+                    self.hacer_movimiento(v, nei)
+                    self.listVisitedStatesBFS.append(nei)
+                    parents[str(nei)] = v
+                    queue.append(nei)
+                    self.chess = tupla[0]
+
+
+        # we found the exit, now we have to go through the parents
+        # up to the start vertex to return the path
+        while v != None:
+            self.pathToTarget.append(v)
+            v = parents[str(v)]
+
+        # the path is in the reversed order so we reverse it
+        self.pathToTarget.reverse()
+        return self.pathToTarget"""
+
+    def func_heuristic(self,estado1, estado2 ):
+        nei1 = copy.copy(estado1)
+        nei2 = copy.copy(estado2)
+        if nei1[0][2]==6:
+            aux = nei1[0]
+            nei1[0] = nei1[1]
+            nei1[1]=aux
+
+        if nei2[0][2]==6:
+            aux = nei2[0]
+            nei2[0] = nei2[1]
+            nei2[1]=aux
+
+        dist1 = abs((nei2[0][0] - nei1[0][0])) + abs((nei2[0][1] - nei1[0][1]))
+        dist2 =abs((nei2[1][0] - nei1[1][0])) + abs((nei2[1][1] - nei1[1][1]))
         return dist1 + dist2
     def BestFirstSearch(self, currentState):
         # Your Code here
@@ -225,26 +309,36 @@ class Aichess():
     def AStarSearch(self, currentState):
             
         # Your Code here
-        objective = []
+        objetivo = [[0, 0, 2], [2, 4, 6]]
         opened = PriorityQueue()
-        closed = queue.Queue()
-        #open.put(VALOR HEURISTICA  , ESTADO,TABLERO EN EL ESTADO, PADRE)
-        heu = self.func_heuristic(currentState)
-        opened.put([heu, {'estado_act': currentState, 'chess': self.chess, 'father': None}])
+        closed = []
+        heu = self.func_heuristic(currentState,objetivo)
+        opened.put([heu,0,{'estado_act': currentState, 'chess': self.chess, 'father': None}])
+
+        identificador = 0
         while not opened.empty():
             actual_state = opened.get()
-            if actual_state[1] == [[0, 0, 2], [2, 4, 6]] or actual_state[1] == [[2, 4, 6], [0, 0, 2]]:
-                closed.put({'estado_act': actual_state[1]['estado_act'], 'chess':  actual_state[1]['chess'], 'father':actual_state[1]['father']})
+            self.chess = actual_state[2]['chess']
+            if actual_state[2]['estado_act'] == [[0, 0, 2], [2, 4, 6]] or actual_state[2]['estado_act'] == [[2, 4, 6], [0, 0, 2]]:
+                #closed.append({'estado_act': actual_state[2]['estado_act'], 'chess':  actual_state[2]['chess'], 'father':actual_state[2]['father']})
+                closed.append([actual_state[2]['estado_act'],actual_state[2]['father']])
                 return closed
 
-            tupla =(copy.deepcopy(self.chess))
-            for nei in self.getListNextStatesW(actual_state[1]['estado_act']):
+            for nei in self.getListNextStatesW(actual_state[2]['estado_act']):
 
                 if self.nei_corrector(nei):
-                    self.hacer_movimiento(actual_state[1]['estado_act'], nei)
-                    opened.put(self.func_heuristic(nei), nei, self.chess, actual_state[1]['estado_act'])
-                self.chess = tupla[0]
-            closed.put(actual_state[1], tupla[0], actual_state[3])
+                    self.hacer_movimiento(actual_state[2]['estado_act'], nei)
+                    heu = self.func_heuristic(actual_state[2]['estado_act'],nei)
+                    heu += self.func_heuristic(nei,objetivo)
+                    print("estamos en el estado", actual_state[2]['estado_act'])
+
+                    opened.put([heu,identificador,{'estado_act': nei, 'chess': copy.deepcopy(self.chess), 'father': actual_state[2]['estado_act']}])
+                    print("valor introducido!!")
+                identificador+=1
+                self.hacer_movimiento( nei, actual_state[2]['estado_act'])
+
+            #closed.append({'estado_act': actual_state[2]['estado_act'], 'chess':  actual_state[2]['chess'], 'father':actual_state[2]['father']})
+            closed.append([actual_state[2]['estado_act'],actual_state[2]['father']])
         return False
 def translate(s):
     """
@@ -305,10 +399,10 @@ if __name__ == "__main__":
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
     #lista = aichess.DepthFirstSearch(currentState, depth)
-
-    lista = queue.Queue()
+    path = []
     lista = aichess.AStarSearch(currentState)
     if lista:
+
         print("encontrado")
         print("Conjunto de movimientos: ", lista)
     else:
