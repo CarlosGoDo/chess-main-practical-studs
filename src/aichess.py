@@ -132,7 +132,8 @@ class Aichess():
     def isCheckMate(self, mystate):
 
         # Your Code
-        listCheckMateStates = [[[0, 0, 2], [2, 4, 6]], [[0, 1, 2], [2, 4, 6]],[[0, 2, 2], [2, 4, 6]], [[0, 6, 2], [2, 4, 6]], [[0, 7, 2], [2, 4, 6]]]
+        listCheckMateStates = [[[0, 0, 2], [2, 4, 6]], [[0, 1, 2], [2, 4, 6]], [[0, 2, 2], [2, 4, 6]],
+                               [[0, 6, 2], [2, 4, 6]], [[0, 7, 2], [2, 4, 6]]]
 
         if mystate in listCheckMateStates:
             print("is check Mate!")
@@ -308,15 +309,9 @@ class Aichess():
     def AStarSearch(self, currentState):
             
         # Your Code here
-        objetivos = [[[0, 0, 2], [2, 4, 6]], [[0, 1, 2], [2, 4, 6]],[[0, 2, 2], [2, 4, 6]], [[0, 6, 2], [2, 4, 6]], [[0, 7, 2], [2, 4, 6]]]
+        objetivo = [[0, 0, 2], [2, 4, 6]]
         opened = PriorityQueue()
         closed = []
-        path=[]
-        dist = float('inf')
-        for checkmate in objetivos:
-            if self.func_heuristic(currentState, checkmate) < dist:
-                dist = self.func_heuristic(currentState, checkmate)
-                objetivo = checkmate
         heu = self.func_heuristic(currentState,objetivo)
         opened.put([heu,0,{'estado_act': currentState, 'chess': self.chess, 'father': None}])
 
@@ -324,15 +319,14 @@ class Aichess():
         while not opened.empty():
             actual_state = opened.get()
             self.chess = actual_state[2]['chess']
-            if self.isCheckMate(actual_state[2]['estado_act']):
+            if actual_state[2]['estado_act'] == [[0, 0, 2], [2, 4, 6]] or actual_state[2]['estado_act'] == [[2, 4, 6], [0, 0, 2]]:
                 #closed.append({'estado_act': actual_state[2]['estado_act'], 'chess':  actual_state[2]['chess'], 'father':actual_state[2]['father']})
-                closed.append([actual_state[2]['estado_act']])
-                path.append([actual_state[2]['estado_act'],actual_state[2]['father']])
+                closed.append([actual_state[2]['estado_act'],actual_state[2]['father']])
                 return closed
 
             for nei in self.getListNextStatesW(actual_state[2]['estado_act']):
 
-                if self.nei_corrector(nei) and nei not in closed:
+                if self.nei_corrector(nei):
                     self.hacer_movimiento(actual_state[2]['estado_act'], nei)
                     heu = self.func_heuristic(actual_state[2]['estado_act'],nei)
                     heu += self.func_heuristic(nei,objetivo)
@@ -340,14 +334,11 @@ class Aichess():
 
                     opened.put([heu,identificador,{'estado_act': nei, 'chess': copy.deepcopy(self.chess), 'father': actual_state[2]['estado_act']}])
                     print("valor introducido!!")
-
                 identificador+=1
                 self.hacer_movimiento( nei, actual_state[2]['estado_act'])
 
             #closed.append({'estado_act': actual_state[2]['estado_act'], 'chess':  actual_state[2]['chess'], 'father':actual_state[2]['father']})
-            closed.append([actual_state[2]['estado_act']])
-            path.append([actual_state[2]['estado_act'], actual_state[2]['father']])
-
+            closed.append([actual_state[2]['estado_act'],actual_state[2]['father']])
         return False
 def translate(s):
     """
@@ -435,7 +426,7 @@ if __name__ == "__main__":
 
     #     aichess.chess.moveSim(start, to)
 
-    aichess.chess.boardSim.print_board()
+    # aichess.chess.boardSim.print_board()
     print("#Move sequence...  ", aichess.pathToTarget)
     #print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
