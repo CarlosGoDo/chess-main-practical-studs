@@ -148,7 +148,7 @@ class Aichess():
         if self.isCheckMate(currentState):
             return currentState
 
-        if depth < 5:
+        if depth < 8:
             strState = str(currentState)
             if strState not in self.listVisitedStates or self.listVisitedStates[strState] > depth:
                 self.listVisitedStates[strState] = depth
@@ -170,7 +170,6 @@ class Aichess():
     def BreadthFirstSearch(self, currentState):
 
         # Your Code here
-
         q = queue.Queue()
         q.put(currentState)
 
@@ -312,6 +311,7 @@ class Aichess():
         objetivo = [[0, 0, 2], [2, 4, 6]]
         opened = PriorityQueue()
         closed = []
+        path = []
         heu = self.func_heuristic(currentState,objetivo)
         opened.put([heu,0,{'estado_act': currentState, 'chess': self.chess, 'father': None}])
 
@@ -320,25 +320,20 @@ class Aichess():
             actual_state = opened.get()
             self.chess = actual_state[2]['chess']
             if actual_state[2]['estado_act'] == [[0, 0, 2], [2, 4, 6]] or actual_state[2]['estado_act'] == [[2, 4, 6], [0, 0, 2]]:
-                #closed.append({'estado_act': actual_state[2]['estado_act'], 'chess':  actual_state[2]['chess'], 'father':actual_state[2]['father']})
-                closed.append([actual_state[2]['estado_act'],actual_state[2]['father']])
-                return closed
-
+                closed.append(actual_state[2]['estado_act'])
+                path.append([actual_state[2]['estado_act'], actual_state[2]['father']])
+                return path
             for nei in self.getListNextStatesW(actual_state[2]['estado_act']):
 
-                if self.nei_corrector(nei):
+                if self.nei_corrector(nei) and nei not in closed:
                     self.hacer_movimiento(actual_state[2]['estado_act'], nei)
-                    heu = self.func_heuristic(actual_state[2]['estado_act'],nei)
-                    heu += self.func_heuristic(nei,objetivo)
-                    print("estamos en el estado", actual_state[2]['estado_act'])
+                    heu = self.func_heuristic(nei,objetivo) + 1
 
                     opened.put([heu,identificador,{'estado_act': nei, 'chess': copy.deepcopy(self.chess), 'father': actual_state[2]['estado_act']}])
-                    print("valor introducido!!")
                 identificador+=1
                 self.hacer_movimiento( nei, actual_state[2]['estado_act'])
-
-            #closed.append({'estado_act': actual_state[2]['estado_act'], 'chess':  actual_state[2]['chess'], 'father':actual_state[2]['father']})
-            closed.append([actual_state[2]['estado_act'],actual_state[2]['father']])
+            closed.append(actual_state[2]['estado_act'])
+            path.append([actual_state[2]['estado_act'], actual_state[2]['father']])
         return False
 def translate(s):
     """
@@ -398,13 +393,33 @@ if __name__ == "__main__":
     # find the shortest path, initial depth 0
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
-    #lista = aichess.DepthFirstSearch(currentState, depth)
+    lista2 = aichess.DepthFirstSearch(currentState, depth)
+
+    if(lista2):
+        print("encontrado")
+        print(lista2)
+    else:
+        print("no hay solucion")
+
     path = []
-    lista = aichess.AStarSearch(currentState)
+    #lista = aichess.AStarSearch(currentState)
+    lista = False
+    #aux = lista[len(lista)-1]
     if lista:
+        while aux[1] != None:
+
+            for e in lista:
+                if e[0] == aux[1]:
+                    path.append(aux[0])
+                    aux = e
+                    pass
+                else:
+                    pass
 
         print("encontrado")
-        print("Conjunto de movimientos: ", lista)
+        path.append(lista[0][0])
+        path.reverse()
+        print("Conjunto de movimientos: ", path)
     else:
         print("no hay solucion")
 
