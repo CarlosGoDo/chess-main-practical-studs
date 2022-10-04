@@ -166,33 +166,26 @@ class Aichess():
 
         return False
 
-
     def BreadthFirstSearch(self, currentState):
 
         # Your Code here
         q = queue.Queue()
-        q.put(currentState)
+        q.put({'estado_act': currentState, 'chess': self.chess, 'pth': [currentState]})
 
-        while (q.empty() == False):
-
+        while not q.empty():
             current = q.get()
-            self.listVisitedStatesBFS.append(current)
-            self.pathToTarget.append(current)
-            tupla = (copy.deepcopy(self.chess),current)
+            self.listaEstadosVisitados.append(current['estado_act'])
+            self.chess = current['chess']
 
-            if self.isCheckMate(current):
-                return self.pathToTarget
-            else:
-                self.chess = tupla[0]
+            if current['estado_act'] == [[0, 0, 2], [2, 4, 6]] or current['estado_act'] == [[2, 4, 6], [0, 0, 2]]:
+                return current['pth']
 
-            print("siguientes movimientos: ")
-            for i in self.getListNextStatesW(current):
-                print(i)
-            for nei in self.getListNextStatesW(current):
-                if nei not in self.listVisitedStatesBFS and self.nei_corrector(nei):
-                    q.put(nei)
-                    self.hacer_movimiento(current, nei)
-                    aichess.chess.boardSim.print_board()
+            for nei in self.getListNextStatesW(current['estado_act']):
+                if nei not in self.listaEstadosVisitados and self.nei_corrector(nei):
+                    self.hacer_movimiento(current['estado_act'], nei)
+                    q.put({'estado_act': nei, 'chess': copy.deepcopy(self.chess),'pth': current['pth']+[nei]})
+                    self.hacer_movimiento(nei, current['estado_act'])
+                    self.listaEstadosVisitados.append(nei)
 
         return False
 
@@ -393,7 +386,8 @@ if __name__ == "__main__":
     # find the shortest path, initial depth 0
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
-    lista2 = aichess.DepthFirstSearch(currentState, depth)
+    lista2 = aichess.BreadthFirstSearch(currentState)
+    #lista2 = aichess.DepthFirstSearch(currentState, depth)
 
     if(lista2):
         print("encontrado")
