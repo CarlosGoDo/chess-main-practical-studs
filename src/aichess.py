@@ -119,22 +119,24 @@ class Aichess():
         return str(nei)
     def nei_corrector(self, nei):
         """
-        En esta función observaremos si el nei o estado futuro del tablero al que vamos tiene algún tipo de error
-        como poner dos fichas en la misma posición o transformar una torre en rey.
+        En aquesta funció comprovem si l'estat passat per paràmetre té algun error com
+        poden ser dues fitxes del mateix tipus o a una mateixa posició.
         """
 
-
-        if nei[0][2] != nei[1][2]: #En este caso tenemos un estado del tablero futuro donde las 2 fichas són iguales
-            if (nei[0][0] != nei[1][0]) and (nei[0][1] != nei[1][1]):#Aquí comprobamos que las fichas no se superpongan en la misma posición del tablero.
+        # Comprovem que les dues fitxes no es superposan
+        if nei[0][2] != nei[1][2]:
+            # Comprovem que les dues fitxes no es superposan
+            if (nei[0][0] != nei[1][0]) and (nei[0][1] != nei[1][1]):
                 return True
         return False
 
     def isCheckMate(self, mystate):
 
-        # Your Code
+        # Llista de possibles checkmates
         listCheckMateStates = [[[0, 0, 2], [2, 4, 6]], [[0, 1, 2], [2, 4, 6]], [[0, 2, 2], [2, 4, 6]],
                                [[0, 6, 2], [2, 4, 6]], [[0, 7, 2], [2, 4, 6]]]
 
+        # Mirem si el nostre estat està a la llista
         if mystate in listCheckMateStates:
             print("is check Mate!")
             return True
@@ -143,22 +145,26 @@ class Aichess():
 
     def DepthFirstSearch(self, currentState, depth):
         # Your Code here
-        # check = self.isCheckMate(currentState)
-        print("estamos en la profundidad", depth, "la maxima profunidad es", self.depthMax)
+
         if self.isCheckMate(currentState):
             return currentState
 
-        if depth < 8:
+        # Comprovem que no excedim la profunditat màxima d'exploració
+        if depth < self.depthMax:
             strState = str(currentState)
+
+            # Mirem que el nostre estat no hagi estat visitat abans
             if strState not in self.listVisitedStates or self.listVisitedStates[strState] > depth:
                 self.listVisitedStates[strState] = depth
-                for nei in self.getListNextStatesW(currentState):
 
-                    if self.nei_corrector(nei):  # comprobamos que nei sea un estado deseado.
-                        # print("seguimos en un vecino de",currentState)
-                        # print("estamos en el estado: ",currentState," y vamos al estado: ",nei)
+                # Explorem les següents possibles posicions
+                for nei in self.getListNextStatesW(currentState):
+                    # Comprovem que l'estat nei no tingui errors
+                    if self.nei_corrector(nei):
+                        # Ens movem a la nova posició i continuem explorant de forma recursiva
                         self.hacer_movimiento(currentState, nei)
                         pth = self.DepthFirstSearch(nei, depth + 1)
+                        # Si s'ha trobat checkmate en aquest camí retornem el path, si no tornem enrere
                         if pth:
                             return [currentState] + pth
                         else:
@@ -170,19 +176,26 @@ class Aichess():
 
         # Your Code here
         q = queue.Queue()
+        # Afegim a la cua l'estat amb el seu tauler i el path recorregut
         q.put({'estado_act': currentState, 'chess': self.chess, 'pth': [currentState]})
 
         while not q.empty():
+            # Extraem el nou estat de la cua, el marquem com a visitat i l'assignem el tauler que li correspon
             current = q.get()
             self.listaEstadosVisitados.append(current['estado_act'])
             self.chess = current['chess']
 
+            # Comprovem si el nostre estat és checkmate
             if current['estado_act'] == [[0, 0, 2], [2, 4, 6]] or current['estado_act'] == [[2, 4, 6], [0, 0, 2]]:
                 return current['pth']
 
+            # Explorem les següents possibles posicions
             for nei in self.getListNextStatesW(current['estado_act']):
+                # Comprovem que l'estat nei no tingui errors i no hagi estat visitat
                 if nei not in self.listaEstadosVisitados and self.nei_corrector(nei):
+                    # Ens movem a la nova posició, l'afegim a la cua la marquem com a visitada i tornem enrere per explorar els altres veins
                     self.hacer_movimiento(current['estado_act'], nei)
+                    # Utilitzem deepcopy per copiar el tauler ja que al fer moviments aquest canvia
                     q.put({'estado_act': nei, 'chess': copy.deepcopy(self.chess),'pth': current['pth']+[nei]})
                     self.hacer_movimiento(nei, current['estado_act'])
                     self.listaEstadosVisitados.append(nei)
@@ -190,8 +203,12 @@ class Aichess():
         return False
 
     def func_heuristic(self,estado1, estado2 ):
+        """
+        Calculem la distància de manhattan entre els dos estats passats per paràmetre
+        """
         nei1 = copy.copy(estado1)
         nei2 = copy.copy(estado2)
+
         if nei1[0][2]==6:
             aux = nei1[0]
             nei1[0] = nei1[1]
@@ -204,6 +221,7 @@ class Aichess():
 
         dist1 = abs((nei2[0][0] - nei1[0][0])) + abs((nei2[0][1] - nei1[0][1]))
         dist2 =abs((nei2[1][0] - nei1[1][0])) + abs((nei2[1][1] - nei1[1][1]))
+
         return dist1 + dist2
     def BestFirstSearch(self, currentState):
         # Your Code here
@@ -211,31 +229,40 @@ class Aichess():
 
 
     def AStarSearch(self, currentState):
-            
         # Your Code here
+
         objetivo = [[0, 0, 2], [2, 4, 6]]
         opened = PriorityQueue()
         closed = []
         path = []
+        # Calculem la distància del nostre estat fins el checkmate
         heu = self.func_heuristic(currentState,objetivo)
+        # Afegim a la cua el nostre estat en un diccionari amb el seu tauler i l'estat anterior, la distància com a índex i un identificador
         opened.put([heu,0,{'estado_act': currentState, 'chess': self.chess, 'father': None}])
-
+        # Utilitzem la variable identificador per evitar problemes que teniem quan hi havia a la cua dos elements amb mateixa distància
         identificador = 0
+
         while not opened.empty():
+            # Extraem el nou estat de la cua i l'assignem el tauler que li correspon
             actual_state = opened.get()
             self.chess = actual_state[2]['chess']
+            # Comprovem si el nostre estat és checkmate
             if actual_state[2]['estado_act'] == [[0, 0, 2], [2, 4, 6]] or actual_state[2]['estado_act'] == [[2, 4, 6], [0, 0, 2]]:
                 closed.append(actual_state[2]['estado_act'])
                 path.append([actual_state[2]['estado_act'], actual_state[2]['father']])
                 return path
-            for nei in self.getListNextStatesW(actual_state[2]['estado_act']):
 
+            # Explorem els següents estats possibles
+            for nei in self.getListNextStatesW(actual_state[2]['estado_act']):
+                # Comprovem que l'estat no té errors i no és un camí tancat
                 if self.nei_corrector(nei) and nei not in closed:
+                    # Ens movem al nou estat i calculem la seva distància a l'objectiu
                     self.hacer_movimiento(actual_state[2]['estado_act'], nei)
                     heu = self.func_heuristic(nei,objetivo) + 1
-
+                    # Guardem l'element a la PriorityQueue
                     opened.put([heu,identificador,{'estado_act': nei, 'chess': copy.deepcopy(self.chess), 'father': actual_state[2]['estado_act']}])
                 identificador+=1
+                # Tornem enrere per a explorar els altres veïns
                 self.hacer_movimiento( nei, actual_state[2]['estado_act'])
             closed.append(actual_state[2]['estado_act'])
             path.append([actual_state[2]['estado_act'], actual_state[2]['father']])
@@ -304,22 +331,22 @@ if __name__ == "__main__":
     """
             #################################### DFS ####################################
     """
-    dfs = aichess.DepthFirstSearch(currentState, depth)
+    """dfs = aichess.DepthFirstSearch(currentState, depth)
     if (dfs):
         print("encontrado")
         print(dfs)
     else:
         print("no hay solucion")
-
+"""
     """
             #################################### BFS ####################################
     """
-    bfs = aichess.BreadthFirstSearch(currentState)
+    """bfs = aichess.BreadthFirstSearch(currentState)
     if(bfs):
         print("encontrado")
         print(bfs)
     else:
-        print("no hay solucion")
+        print("no hay solucion")"""
 
     """
           #################################### AStar ####################################
