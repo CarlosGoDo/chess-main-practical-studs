@@ -208,6 +208,8 @@ class Aichess():
     def BestFirstSearch(self, currentState):
         # Your Code here
         return 0
+
+
     def AStarSearch(self, currentState):
             
         # Your Code here
