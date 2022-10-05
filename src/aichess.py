@@ -189,96 +189,6 @@ class Aichess():
 
         return False
 
-        """queue = []
-        queue.put(currentState)
-        pth=[currentState]
-
-        while (queue):
-
-            current = queue.get()
-            self.listVisitedStatesBFS.append(current)
-            pth.append(current)
-
-            if current == [[0, 0, 2], [2, 4, 6]] or current == [[2, 4, 6], [0, 0, 2]]:
-                return pth
-            tupla = (copy.deepcopy(self.chess),current)
-            for next in self.getListNextStatesW(current):
-                if self.nei_corrector(next) and next not in self.listVisitedStatesBFS:
-                    self.hacer_movimiento(current,next)
-                    self.listVisitedStatesBFS.append(next)
-                    queue.put(next)
-                    pth.append(next)
-                    self.chess = tupla[0]
-
-        return False"""
-
-        """queue = []
-        queue.append(currentState)
-        # this keeps track of where did we get to each vertex from
-        # so that after we find the exit we can get back
-        parents = dict()
-        parents[str(currentState)] = None
-
-        while queue:
-            v = queue.pop()
-            if v == [[0, 0, 2], [2, 4, 6]] or v == [[2, 4, 6], [0, 0, 2]]:
-                break
-            self.listVisitedStatesBFS.append(v)
-            tupla = (copy.deepcopy(self.chess), v)
-
-            for u in self.getListNextStatesW(v):
-                if self.nei_corrector(u) and u not in self.listVisitedStatesBFS:
-                    self.hacer_movimiento(v,u)
-                    parents[str(u)] = v
-                    queue.append(u)
-                    self.chess = tupla[0]
-
-        # we found the exit, now we have to go through the parents
-        # up to the start vertex to return the path
-        while v != None:
-            self.pathToTarget.append(v)
-            v = parents[str(v)]
-
-        # the path is in the reversed order so we reverse it
-        self.pathToTarget.reverse()
-        return self.pathToTarget"""
-
-        """queue = []
-        queue.append(currentState)
-        vecinos = []
-        # this keeps track of where did we get to each vertex from
-        # so that after we find the exit we can get back
-        parents = dict()
-        parents[str(currentState)] = None
-
-        while queue:
-            v = queue.pop()
-            if v == [[0, 0, 2], [2, 4, 6]] or v == [[2, 4, 6], [0, 0, 2]]:
-                break
-            self.listVisitedStatesBFS.append(v)
-
-            for u in self.getListNextStatesW(v):
-                vecinos.append(u)
-            tupla = (copy.deepcopy(self.chess), v)
-            for nei in vecinos:
-                if self.nei_corrector(nei) and nei not in self.listVisitedStatesBFS:
-                    self.hacer_movimiento(v, nei)
-                    self.listVisitedStatesBFS.append(nei)
-                    parents[str(nei)] = v
-                    queue.append(nei)
-                    self.chess = tupla[0]
-
-
-        # we found the exit, now we have to go through the parents
-        # up to the start vertex to return the path
-        while v != None:
-            self.pathToTarget.append(v)
-            v = parents[str(v)]
-
-        # the path is in the reversed order so we reverse it
-        self.pathToTarget.reverse()
-        return self.pathToTarget"""
-
     def func_heuristic(self,estado1, estado2 ):
         nei1 = copy.copy(estado1)
         nei2 = copy.copy(estado2)
@@ -386,23 +296,39 @@ if __name__ == "__main__":
     # find the shortest path, initial depth 0
     depth = 0
     #aichess.BreadthFirstSearch(currentState)
-    lista2 = aichess.BreadthFirstSearch(currentState)
+    #lista2 = aichess.BreadthFirstSearch(currentState)
     #lista2 = aichess.DepthFirstSearch(currentState, depth)
 
-    if(lista2):
+    """
+            #################################### DFS ####################################
+    """
+    dfs = aichess.DepthFirstSearch(currentState, depth)
+    if (dfs):
         print("encontrado")
-        print(lista2)
+        print(dfs)
     else:
         print("no hay solucion")
 
+    """
+            #################################### BFS ####################################
+    """
+    bfs = aichess.BreadthFirstSearch(currentState)
+    if(bfs):
+        print("encontrado")
+        print(bfs)
+    else:
+        print("no hay solucion")
+
+    """
+          #################################### AStar ####################################
+    """
     path = []
-    #lista = aichess.AStarSearch(currentState)
-    lista = False
-    #aux = lista[len(lista)-1]
-    if lista:
+    astar = aichess.AStarSearch(currentState)
+    aux = astar[len(astar) - 1]
+    if astar:
         while aux[1] != None:
 
-            for e in lista:
+            for e in astar:
                 if e[0] == aux[1]:
                     path.append(aux[0])
                     aux = e
@@ -411,7 +337,7 @@ if __name__ == "__main__":
                     pass
 
         print("encontrado")
-        path.append(lista[0][0])
+        path.append(astar[0][0])
         path.reverse()
         print("Conjunto de movimientos: ", path)
     else:
